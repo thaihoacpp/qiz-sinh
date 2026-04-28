@@ -3,251 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Sinh 10 - Giao Diện Mới</title>
-    <link href="https://googleapis.com" rel="stylesheet">
+    <title>Trắc Nghiệm Xáo Trộn</title>
     <style>
-        :root {
-            --primary: #27ae60;
-            --secondary: #2ecc71;
-            --wrong: #e74c3c;
-            --text: #2c3e50;
-            --bg: #f0f7f4;
-        }
-
-        * { box-sizing: border-box; font-family: 'Quicksand', sans-serif; }
-
-        body {
-            background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0;
-            padding: 15px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 650px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 30px;
-            border-radius: 24px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-
-        .progress-container {
-            width: 100%;
-            height: 8px;
-            background: #eee;
-            border-radius: 10px;
-            margin-bottom: 25px;
-        }
-        #progress-bar {
-            height: 100%;
-            background: var(--primary);
-            width: 0%;
-            border-radius: 10px;
-            transition: width 0.4s ease;
-        }
-
-        h1 { color: var(--text); font-size: 24px; margin-top: 0; }
-
-        .score-box {
-            background: #e8f5e9;
-            color: var(--primary);
-            padding: 8px 20px;
-            border-radius: 50px;
-            font-weight: 700;
-            display: inline-block;
-            margin-bottom: 20px;
-        }
-
-        .question {
-            font-size: 19px;
-            font-weight: 700;
-            color: #34495e;
-            margin-bottom: 25px;
-            line-height: 1.5;
-            text-align: left;
-        }
-
-        #choices {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        @media (max-width: 480px) {
-            #choices { grid-template-columns: 1fr; }
-        }
-
-        button {
-            padding: 15px;
-            border: 2px solid transparent;
-            border-radius: 12px;
-            background: white;
-            color: var(--text);
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: left;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            display: block;
-            width: 100%;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            border-color: var(--primary);
-            background: #f1fcf5;
-        }
-
-        button.correct {
-            background: var(--primary) !important;
-            color: white !important;
-            border-color: #1e8449 !important;
-        }
-
-        button.wrong {
-            background: var(--wrong) !important;
-            color: white !important;
-            border-color: #c0392b !important;
-        }
-
-        .result-screen h2 { color: var(--primary); font-size: 28px; }
-        .final-score { font-size: 40px; font-weight: 700; margin: 15px 0; }
-        .restart-btn { background: var(--text); color: white; text-align: center; margin: 20px auto 0; width: 200px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background-color: #f0f2f5; }
+        .quiz-card { background: white; padding: 30px; border-radius: 12px; shadow: 0 8px 20px rgba(0,0,0,0.1); width: 90%; max-width: 550px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .question { font-size: 1.2rem; font-weight: 600; margin-bottom: 20px; color: #1c1e21; text-align: left; line-height: 1.4; }
+        .options { display: grid; gap: 12px; }
+        .btn-option { padding: 14px; border: 1px solid #ddd; background: #fff; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 1rem; text-align: left; }
+        .btn-option:hover { background: #f8f9fa; border-color: #007bff; }
+        .btn-option.correct { background: #28a745 !important; color: white; border-color: #28a745; }
+        .btn-option.wrong { background: #dc3545 !important; color: white; border-color: #dc3545; }
+        #feedback { margin-top: 15px; font-weight: bold; min-height: 24px; }
+        #next-btn { margin-top: 20px; padding: 12px 30px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; display: none; font-weight: bold; }
+        #result-screen { display: none; }
+        .progress-bar { font-size: 0.9rem; color: #65676b; margin-bottom: 15px; text-align: right; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>📘 Quiz Sinh Học 10</h1>
-    <div class="score-box" id="score">Điểm: 0</div>
-    
-    <div class="progress-container">
-        <div id="progress-bar"></div>
+<div class="quiz-card" id="quiz-card">
+    <div id="question-container">
+        <div class="progress-bar" id="progress"></div>
+        <div class="question" id="question-text">Đang chuẩn bị câu hỏi...</div>
+        <div class="options" id="options-container"></div>
+        <div id="feedback"></div>
+        <button id="next-btn" onclick="nextQuestion()">Tiếp theo</button>
     </div>
 
-    <div id="quiz-content">
-        <div class="question" id="question"></div>
-        <div id="choices"></div>
+    <div id="result-screen">
+        <h2 style="color: #28a745;">Hoàn thành!</h2>
+        <p id="score-text" style="font-size: 1.2rem; margin: 20px 0;"></p>
+        <button onclick="location.reload()" style="padding: 10px 25px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px;">Làm lại bài mới</button>
     </div>
 </div>
 
 <script>
-let data = `Trình tự các pha trong chu kì tế bào là?|A.G1→G2→S→M|B.M→G1→S→G2|C.G1→S→G2→M|D.M→G1→G2→S|C#
-Sự kiện nào sau đây diễn ra ở pha S của chu kì tế bào?|A.Tế bào ngừng sinh trưởng|B.DNA và NST nhân đôi|C.NST phân li|D.NST xếp hàng|B#
-Trong chu kì tế bào, NST tồn tại ở trạng thái kép xuất hiện ở?|A.S,G2,kì đầu/kì giữa|B.S,G2,kì giữa/kì sau|C.S,G2,kì sau/kì cuối|D.S,G2,kì đầu/kì cuối|A#
-Khi tế bào vượt qua điểm G1 sẽ chuyển sang?|A.Pha S|B.Pha G2|C.Pha M nhân|D.Pha M tb chất|A#
-Trong nguyên phân, chromatid phân li ở?|A.Kì đầu|B.Kì giữa|C.Kì sau|D.Kì cuối|C#
-Quan sát NST rõ nhất ở kì giữa vì?|A.Dãn xoắn cực đại|B.Đóng xoắn cực đại|C.Đã nhân đôi|D.Đã phân li|B#
-Sự khác nhau phân chia tb chất do?|A.Lysosome|B.Trung thể|C.Lục lạp|D.Thành tế bào|D#
-Cho các vai trò sau:
-(1) Làm tăng số lượng tế bào giúp cơ thể đa bào sinh trưởng và phát triển.
-(2) Giúp cơ thể đa bào tái sinh những mô hoặc cơ quan bị tổn thương.
-(3) Là cơ chế sinh sản của nhiều sinh vật đơn bào.
-(4) Là cơ chế sinh sản của nhiều loài sinh sản vô tính.
-Số vai trò của quá trình nguyên phân là|A.1|B.2|C.3|D.4|D#
-Giảm phân gồm?|A.1 nhân đôi + 2 phân bào|B.1 nhân đôi + 1 phân bào|C.2 nhân đôi + 2 phân bào|D.2 nhân đôi + 1 phân bào|A#
-Giao tử có bộ NST?|A.n|B.2n|C.3n|D.4n|A#
-Tiếp hợp và trao đổi chéo ở?|A.Kì đầu I|B.Kì giữa I|C.Kì đầu II|D.Kì giữa II|A#
-Kì sau I và II giống nhau ở?|A.Tách chromatid|B.Xếp hàng|C.Di chuyển về cực|D.Tiếp hợp|C#
-Nguyên phân và giảm phân giống nhau ở?|A.2 lần phân bào|B.1 lần nhân đôi|C.Tiếp hợp|D.Trao đổi chéo|B#
-Giao tử là?|A.Tế bào n tham gia thụ tinh|B.Tế bào 2n|C.Phải giảm phân mới thụ tinh|D.2n rồi giảm phân|A#
-1 tb sinh tinh tạo?|A.4|B.1|C.2|D.3|A#
-1 tb sinh trứng tạo?|A.4 trứng|B.2 trứng|C.1 trứng + 3 thể cực|D.3 trứng|C#
-AaBb tạo bao nhiêu giao tử?|A.1|B.2|C.4|D.3|C#
-Ổn định NST nhờ?|A.Nguyên phân + giảm phân|B.Nguyên phân + thụ tinh|C.Giảm phân + thụ tinh|D.Cả 3|D#
-Ngựa 64 × lừa 62 →?|A.62|B.64|C.63|D.126|C#
-Kì giữa I vs II khác ở?|A.Sắp xếp NST|B.Trao đổi chéo|C.Phân li|D.Co xoắn|A#
-Sự kiện nào sau đây không xảy ra ở kì đầu giảm phân I?|A.Trao đổi chéo|B.NST đơn nhân đôi|C.Màng nhân tiêu biến|D.Tiếp hợp NST|B#
-Một tế bào lợn 2n=38, kì sau I có?|A.38 NST, 76 chromatid|B.38 NST, 0 chromatid|C.38 NST, 38 chromatid|D.76 NST, 76 chromatid|A#Tế bào 2n=46 nguyên phân, phát biểu sai?|A.Kì đầu 46 NST kép|B.Kì giữa 46 NST kép|C.Kì sau 92 NST kép|D.Kì cuối mỗi tb 46 NST đơn|C#4 tế bào nguyên phân 3 đợt →?|A.32|B.12|C.24|D.48|A#Quan sát thấy 19 NST kép → đang ở?|A.Kì đầu II giảm phân|B.Kì đầu nguyên phân|C.Kì đầu I giảm phân|D.Kì cuối II|A#Tinh trùng có 28 NST → cơ thể có?|A.14|B.28|C.42|D.56|D#20 tb sinh trứng →?|A.40 trứng|B.20 trứng + 60 thể cực|C.80 trứng|D.20 thể cực|B#Hoạt động quan trọng NST nguyên phân?|A.Nhân đôi + xoắn|B.Phân li đều|C.Nhân đôi + phân li|D.Xoắn + tháo|C#Công nghệ tế bào là?|A.Nuôi cấy mô|B.Công nghệ gen|C.PCR|D.CNSH|A#Tế bào gốc là?|A.Đã biệt hóa|B.Tủy xương|C.Có khả năng biệt hóa|D.Bạch cầu|C#Nguyên lí công nghệ tế bào?|A.Toàn năng|B.Biệt hóa|C.Phản biệt hóa|D.Cả 3|D#Phát biểu đúng?|A.Động vật toàn năng như nhau|B.Thực vật có phản biệt hóa|C.Động vật cao hơn thực vật|D.Mọi tb động vật phản biệt hóa|B#Giâm cành dựa vào?|A.Toàn năng|B.Biệt hóa|C.Phản biệt hóa|D.Cả 3|D#Cho các thành tựu sau:
-(1) Tạo mô, cơ quan thay thế
-(2) Tạo dòng tế bào và động vật chuyển gene
-(3) Nhân bản vô tính ở động vật
-Các thành tựu chính của công nghệ tế bào động vật gồm|A.(1)(2)|B.(1)(3)|C.(2)(3)|D.(1)(2)(3)|D#Giảm dần toàn năng?|A.Đỉnh→bên→mềm|B.Bên→đỉnh→mềm|C.Mềm→bên→đỉnh|D.Mềm→đỉnh→bên|A#Tăng dần toàn năng?|A.Phôi→cuống→cơ tim→mô cơ|B.Mô cơ→cơ tim→cuống→phôi|C.Mô cơ→cuống→cơ tim→phôi|D.Phôi→cơ tim→cuống→mô cơ|B#Sau G2 vào?|A.G1|B.S|C.M|D.G0|C#Ý nghĩa nguyên phân?|A.Chia nhân đều|B.Sao chép NST|C.Phân li cromatit|D.Chia tb chất|B#Trao đổi chéo ở?|A.Kì đầu I|B.Kì giữa I|C.Kì đầu II|D.Kì giữa II|A#Giảm phân xảy ra ở?|A.Sinh dưỡng|B.Giao tử|C.Sinh dục chín|D.Hợp tử|C#NST tách ở tâm động giảm phân?|A.Kì sau I|B.Kì sau II|C.Kì giữa I|D.Kì giữa II|B#Công nghệ tb thực vật?|A.Thụ phấn|B.Vi sinh|C.Nuôi cấy mô|D.Gieo hạt|C#Không phải thành tựu?|A.Nhân bản|B.Tế bào gốc|C.Gene|D.Lai tb|C#Tạo giống mang đặc điểm 2 loài?|A.Nhân bản|B.Nuôi cấy|C.Lai tb|D.Hạt phấn|C#Vi sinh vật là?|A.Kí sinh|B.Nhỏ, thấy bằng kính hiển vi|C.Đơn bào|D.Nhân sơ|B#Quang dị dưỡng?|A.Anh sáng + CO2|B.Anh sáng + hữu cơ|C.Vô cơ + CO2|D.Hữu cơ + hữu cơ|B#Không phải vi sinh?|A.VK|B.Nấm men|C.Tảo đơn bào|D.Cây rêu|D#Quan sát vi khuẩn sống?|A.Soi tươi|B.Nhuộm Gram|C.Hóa sinh|D.Di truyền|A`;
+    // DỮ LIỆU GỐC (Bạn có thể dán toàn bộ các câu từ 1-40 vào đây)
+    const rawData = "Câu 1: Văn minh Đại Việt có cội nguồn từ nền văn minh|Văn Lang - Âu Lạc|Chăm - pa, Phù Nam|Đồng Đậu, Gò Tháp|Đông Sơn, Sa Huỳnh|A#Câu 2: Dưới triều đại nhà Lê (thế kỉ XV), bộ luật thành văn nào sau đây được ban hành?|Hình luật|Hình thư|Quốc triều hình luật|Hoàng Việt luật lệ|C#Câu 3: Đâu là ngành kinh tế chính của nền văn minh Đại Việt?|Nông nghiệp|Thương nghiệp|Thủ công nghiệp|Lâm, ngư nghiệp|A#Câu 4: Triều đại nào mở đầu cho thời đại phong kiến độc lập của dân tộc ta?|Triều Tiền Lý|Triều Ngô|Triều Lê|Triều Nguyễn|B#Câu 5: Đến thời Lê sơ, Nho giáo|Bước đầu được du nhập vào Đại Việt|Được nâng lên địa vị độc tôn|Bị nhà nước phong kiến kìm hãm|Không còn phát triển như trước|B#Câu 6: Trong lịch sử dân tộc Việt Nam, khái niệm văn minh Đại Việt được hiểu là|Sáng tạo vật chất và tinh thần trong kỷ nguyên độc lập|Những công trình kiến trúc còn lưu giữ lại đến ngày nay|Những tác phẩm văn học chữ Hán được sáng tác thời Lý|Kho tàng tri thức quân sự được đúc rút trong chiến tranh|A#Câu 7: “Tam giáo đồng nguyên” là sự hòa hợp của của các tôn giáo|Phật giáo - Đạo giáo - Nho giáo|Phật giáo - Nho giáo - Thiên Chúa giáo|Phật giáo - Đạo giáo - Tín ngưỡng dân gian|Nho giáo - Phật giáo - Ấn Độ giáo|A#Câu 8: Nghệ thuật chạm khắc gỗ đá tiêu biểu, được UNESCO công nhận là di sản tư liệu thế giới là công trình nào?|Chùa Trấn Quốc|Tượng phật la hán chùa Tây Phương|82 bia tiến sĩ ở Văn Miếu|Bộ cửa gỗ chùa Phổ Minh|C#Câu 9: Nội dung nào sau đây là cơ sở quan trọng nhất dẫn đến sự hình thành và phát triển rực rỡ của văn minh Đại Việt?|Kế thừa các nền văn minh cổ đại|Nền độc lập, tự chủ của đất nước|Tiếp thu thành tựu văn minh Ấn Độ|Tiếp thu thành tựu văn minh Trung Hoa|B#Câu 10: Các xưởng thủ công của nhà nước dưới các triều đại phong kiến Việt Nam còn được gọi là|Cục bách tác|Quốc sử quán|Quốc tử giám|Hàn lâm viện|A#Câu 11: Trung tâm chính trị - văn hóa và đô thị lớn nhất Đại Việt thế kỷ X-XV được nhắc đến trong câu “thứ nhất Kinh kì, thứ nhì Phố Hiến” là|Phố Hiến|Thanh Hà|Thăng Long|Hội An|C#Câu 12: “Đời vua Thái Tổ, Thái Tông, thóc lúa đầy đồng, trâu chẳng buồn ăn” là câu ca dân gian nói về thời|Tiền Lê|Lý – Trần|Hồ|Lê sơ|D#Câu 13: Dân tộc có số dân ít nhất của Việt Nam hiện nay là|Brâu|Dao|Rag lai|Ơ Đu|D#Câu 14: Hiện nay ở Việt Nam có bao nhiêu dân tộc?|50 dân tộc|52 dân tộc|54 dân tộc|56 dân tộc|C#Câu 15: Thành phần dân tộc theo dân số ở Việt Nam hiện nay được chia thành|Dân tộc đa số và dân tộc thiểu số|Dân tộc sinh sống vùng đất liền|Dân tộc sinh sống vùng hải đảo|Dân tộc sinh sống vùng miền núi|A#Câu 16: Khái niệm “dân tộc” trong tiếng Việt hiện nay được sử dụng theo những nghĩa nào?|Dân tộc - quốc gia và dân tộc - tộc người|Dân tộc đa số và dân tộc thiểu số|Dân tộc miền núi và dân tộc đồng bằng|Dân tộc - tộc người và dân tộc - ngữ hệ|A#Câu 17: Hiện nay, ở Việt Nam có bao nhiêu nhóm ngôn ngữ?|Năm nhóm|Sáu nhóm|Bảy nhóm|Tám nhóm|D#Câu 18: Trong sản xuất nông nghiệp của dân tộc Kinh, hoạt động kinh tế chính là|canh tác lúa nước|chăn nuôi gia súc|nuôi trồng thủy sản|trồng cây lúa nương|A#Câu 19: Về thủ công nghiệp, sản phẩm của người Kinh rất đa dạng và tinh xảo, không những đáp ứng nhu cầu trong nước mà còn|xuất khẩu|nhập khẩu|giao lưu|biếu, tặng|A#Câu 20: Phong tục nào sau đây không phải là phong tục tập quán của người Kinh?|Phong tục tập quán về chu kì vòng đời|Phong tục tập quán về chu kì canh tác|Phong tục tập quán về chu kì thời gian|Phong tục điểu táng|D#Câu 21: Ở Việt Nam, những nghề thủ công ra đời sớm và phát triển mạnh ở các dân tộc thiểu số là|nghề dệt và nghề đan|nghề rèn, đúc và nghề mộc|nghề gốm và chạm khắc|nghề làm giấy và in ấn|A#Câu 22: Lễ hội của các dân tộc thiểu số ở Việt Nam chủ yếu được tổ chức với quy mô như thế nào?|Làng/bản và tộc người|Quốc gia và quốc tế|Làng/bản và quốc tế|Tộc người và quốc tế|A#Câu 21: Nhóm ngôn ngữ nào có nhiều dân tộc sử dụng nhất ở Việt Nam?|Môn - Khơ me|Việt - Mường|Mông - Dao|Hán - Tạng|A#Câu 22: Theo nghị định số 05/2011/NĐ - CP về công tác dân tộc, “Dân tộc đa số” phải có số dân chiếm bao nhiêu % tổng số dân?|Trên 40 %|Trên 50 %|Trên 60 %|50 %|B#Câu 23: Một trong những cơ sở dẫn đến sự hình thành khối đại đoàn kết dân tộc ở Việt Nam là|yêu cầu thống nhất các vùng lãnh thổ|yêu cầu tập trung lực lượng đấu tranh chống giặc ngoại xâm|tham vọng xâm lược và bành trướng lãnh thổ|nhu cầu mở rộng giao lưu buôn bán|B#Câu 24: Ngày nay, khối đại đoàn kết các dân tộc Việt Nam được tập trung trong tổ chức nào sau đây?|Hội Văn hóa Cứu quốc Việt Nam|Mặt trận Liên Việt|Mặt trận Tổ quốc Việt Nam|Đảng Cộng sản Việt Nam|C#Câu 25: Ba nguyên tắc của Đảng Cộng sản Việt Nam trong xây dựng và phát triển khối đại đoàn kết dân tộc hiện nay là|bình đẳng, tự quyết và tương trợ nhau cùng phát triển|đoàn kết, dân chủ và bình đẳng giữa các dân tộc|bình đẳng, chủ quyền và quyền tự quyết của mỗi dân tộc|đoàn kết, bình đẳng và tương trợ nhau cùng phát triển|D#Câu 26: Loại hình canh tác lúa nước đặc sắc của đồng bào dân tộc thiểu số ở các thung lũng chân núi hoặc sườn đồi, sườn núi là?|Canh tác nuơng rẫy|Ruộng bậc thang|Guồng dẫn nước|Mương máng tưới tiêu|B#Câu 27: Nghề thủ công truyền thống nổi tiếng ở Thành phố Huế quê hương em là|Làng gốm Bát Tràng|Làng hương Thủy Xuân|Tranh dân gian Đông Hồ|Dệt lụa Vạn Phúc|B#Câu 28: Áo bà ba là trang phục truyền thống của phụ nữ vùng nào của Việt Nam|Bắc Bộ|Nam Bộ|Trung Bộ|Toàn Việt Nam|B#Câu 29: Vì sao cư dân các dân tộc thiểu số ở miền núi (Việt Nam) chủ yếu đi bộ và vận chuyển đồ bằng gùi?|Địa hình phức tạp, độ dốc lớn, hẹp|Địa hình bằng phẵng, lộ xi măng|Địa hình phức tạp, độ dốc thấp, rộng|Có nhiều cây cối chặn các lối đi|A#Câu 30: Lễ hội cồng chiêng Tây nguyên là của các dân tộc nào?|Gia Rai, Ê Đê, Ba Na, Xơ Đăng, Brâu, Cơ Ho|Kinh, Hoa, Khơ me|Mông, Tày, Thái, Nùng|Tày, Sán Chỉ, Lô Lô, Chăm|A#Câu 31: Lễ hội sông nước nổi tiếng ở Thành phố Huế là|Festival|Cầu Ngư|Vật Làng Sình|Thả diều|B#Câu 32: Nhà sàn dài là của cư dân dân tộc|Kinh|Hoa|Chăm|Êđê|D#Câu 33: Một trong những cơ sở hình thành khối đại đoàn kết dân tộc Việt Nam là từ yêu cầu|Giúp đỡ, chia sẻ nhau trong cuộc sống|Tập hợp lực lượng đấu tranh chống ngoại xâm|Tập hợp chống thú dữ khi cuộc sống còn sơ khai|Chế tạo công cụ lao động trong sinh hoạt hàng ngày|B#Câu 34: Khối đoàn kết dân tộc Việt Nam đã được hình thành từ:|Thời dựng nước Văn Lang – Âu Lạc|Khi thắng lợi 1000 năm Bắc thuộc|Khi giành được nền độc lập tự chủ|Khi giặc phương Bắc sang xâm lược|A#Câu 35: Những nguyên tắc nào sau đây là quan điểm của Đảng Cộng Sản Việt Nam trong việc xây dựng và phát triển khối đại đoàn kết dân tộc?|Đoàn kết, bình đẳng và tương trợ cùng phát triển|Bình đẳng, hợp tác và giúp đỡ nhau cùng phát triển|Đoàn kết, giúp đỡ nhau để vượt qua mọi khó khăn|Hợp tác, tương trợ và giúp đỡ nhau trong cuộc sống|A#Câu 36: Mục tiêu của Đảng và Nhà nước ta trong chính sách phát triển kinh tế miền núi, vùng dân tộc thiểu số là:|Nhằm phát huy tiềm năng, thế mạnh của các dân tộc|Nhằm đưa kinh tế miền núi trở thành trung tâm của kinh tế cả nước|Nhanh chóng hội nhập với nền kinh tế khu vực và thế giới|Đảm bảo được nhu cầu tự cung, tự cấp của đồng bào dân tộc thiểu số|A#Câu 37: Nội dung nào sau đây không đúng với quan điểm của Đảng và Nhà nước Việt Nam về chính sách dân tộc hiện nay?|Nghiêm cấm mọi hành vi kỳ thị và chia rẽ các dân tộc|Các dân tộc có quyền dùng chữ viết và tiếng nói riêng|Các dân tộc có quyền gìn giữ bản sắc dân tộc mình|Nghiêm cấm mọi hình thức tổ chức sinh hoạt tín ngưỡng|D#Câu 38: Một trong những vai trò của khối đại đoàn kết dân tộc trong sự nghiệp xây dựng và bảo vệ Tổ quốc Việt Nam hiện nay là|Nâng cao vị thế quốc gia - dân tộc trên trường quốc tế|Tăng cường sức mạnh của lực lượng vũ trang, cơ giới|Huy động sức mạnh toàn dân thực hiện mục tiêu chung|Đã đẩy nhanh quá trình hội nhập quốc tế và khu vực|C#Câu 39: Một trong những điểm chung của các Mặt trận được Đảng Cộng sản Việt Nam thành lập từ tháng 2 năm 1930 đến nay là|Cơ quan lãnh đạo cao nhất của Đảng và Nhà nước|Đoàn kết toàn dân tộc để thực hiện mục tiêu chung|Thực hiện chức năng, nhiệm vụ của Bộ ngoại giao|Phân hóa để tiêu diệt những kẻ thù của cách mạng|B#Câu 40: Nội dung nào sau đây được quán triệt trong toàn Đảng, toàn quân, toàn dân nhằm xây dựng khối Đại đoàn kết dân tộc?|Bình đẳng, hợp tác và giúp đỡ nhau cùng phát triển|Đoàn kết, giúp đỡ nhau để vượt qua mọi khó khăn|Hợp tác, tương trợ và giúp đỡ nhau trong cuộc sống|Đoàn kết, bình đẳng và tương trợ để cùng phát triển|D#";
 
-// ===== LOGIC CHƯƠNG TRÌNH =====
-let questions = data.split("#").filter(x => x.trim());
-let score = 0;
-let total = questions.length;
-let current = null;
+    let questions = [];
+    let currentIdx = 0;
+    let score = 0;
+    let canAnswer = true;
 
-function next(){
-    if(questions.length === 0){
-        showResult();
-        return;
+    // Hàm xáo trộn mảng (Fisher-Yates Shuffle)
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
     }
 
-    // Cập nhật thanh tiến độ
-    let progress = ((total - questions.length) / total) * 100;
-    document.getElementById("progress-bar").style.width = progress + "%";
+    function initQuiz() {
+        // 1. Tách dữ liệu và tạo đối tượng câu hỏi
+        const tempQuestions = rawData.split('#').filter(item => item.trim() !== "");
+        
+        questions = tempQuestions.map(item => {
+            const p = item.split('|');
+            const originalOptions = [
+                { text: p[1], id: 'A' },
+                { text: p[2], id: 'B' },
+                { text: p[3], id: 'C' },
+                { text: p[4], id: 'D' }
+            ];
+            const correctLetter = p[5].trim().toUpperCase();
+            const correctText = originalOptions.find(opt => opt.id === correctLetter).text;
 
-    let rd = Math.floor(Math.random() * questions.length);
-    current = questions[rd].split("|");
-    questions.splice(rd,1);
+            // 2. Xáo trộn các lựa chọn bên trong mỗi câu hỏi
+            const shuffledOptions = shuffle([...originalOptions]);
 
-    show();
-}
+            return {
+                q: p[0],
+                options: shuffledOptions,
+                correctText: correctText // Lưu văn bản đáp án đúng thay vì chữ cái A,B,C,D
+            };
+        });
 
-function show(){
-    // Hiển thị câu hỏi (giữ nguyên gốc)
-    document.getElementById("question").innerHTML = current[0].replace(/\n/g, "<br>");
+        // 3. Xáo trộn thứ tự các câu hỏi
+        shuffle(questions);
+        
+        loadQuestion();
+    }
 
-    let html = "";
-    // Hiển thị 4 lựa chọn (giữ nguyên nội dung bao gồm cả A. B. C. D.)
-    ["A","B","C","D"].forEach((c,i)=>{
-        html += `<button onclick="check('${c}', this)">
-            ${current[i+1]}
-        </button>`;
-    });
-
-    document.getElementById("choices").innerHTML = html;
-}
-
-function check(ans, btn){
-    let correct = current[5].trim();
-    let buttons = document.querySelectorAll("#choices button");
-
-    buttons.forEach(b => b.disabled = true);
-
-    if(ans === correct){
-        score++;
-        btn.classList.add("correct");
-    } else {
-        btn.classList.add("wrong");
-        buttons.forEach(b => {
-            // Kiểm tra nút nào chứa đáp án đúng
-            if(b.innerText.trim().startsWith(correct)){
-                b.classList.add("correct");
-            }
+    function loadQuestion() {
+        canAnswer = true;
+        const qData = questions[currentIdx];
+        document.getElementById('progress').innerText = `Câu ${currentIdx + 1} / ${questions.length}`;
+        document.getElementById('question-text').innerText = qData.q;
+        document.getElementById('feedback').innerText = "";
+        document.getElementById('next-btn').style.display = "none";
+        
+        const container = document.getElementById('options-container');
+        container.innerHTML = '';
+        
+        const labels = ['A', 'B', 'C', 'D'];
+        qData.options.forEach((opt, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-option';
+            btn.innerHTML = `<strong>${labels[i]}.</strong> ${opt.text}`;
+            btn.onclick = () => checkAnswer(opt.text, btn);
+            container.appendChild(btn);
         });
     }
 
-    document.getElementById("score").innerHTML = `Điểm: ${score} / ${total}`;
-    setTimeout(next, 1000);
-}
+    function checkAnswer(selectedText, btn) {
+        if (!canAnswer) return;
+        canAnswer = false;
 
-function showResult() {
-    document.getElementById("progress-bar").style.width = "100%";
-    let percent = Math.round((score / total) * 100);
-    document.getElementById("quiz-content").innerHTML = `
-        <div class="result-screen">
-            <h2>🎉 Hoàn thành!</h2>
-            <div class="final-score">${score} / ${total}</div>
-            <p>Bạn đạt tỉ lệ chính xác: ${percent}%</p>
-            <button class="restart-btn" onclick="location.reload()">Làm lại</button>
-        </div>
-    `;
-}
+        const correctText = questions[currentIdx].correctText;
+        const allBtns = document.querySelectorAll('.btn-option');
+        
+        if (selectedText === correctText) {
+            btn.classList.add('correct');
+            document.getElementById('feedback').innerText = "Chính xác! ✨";
+            document.getElementById('feedback').style.color = "#28a745";
+            score++;
+        } else {
+            btn.classList.add('wrong');
+            document.getElementById('feedback').innerText = "Sai rồi!";
+            document.getElementById('feedback').style.color = "#dc3545";
+            // Hiển thị đáp án đúng
+            allBtns.forEach(b => {
+                if (b.innerText.includes(correctText)) b.classList.add('correct');
+            });
+        }
+        
+        document.getElementById('next-btn').style.display = "inline-block";
+    }
 
-// Bắt đầu
-next();
+    function nextQuestion() {
+        currentIdx++;
+        if (currentIdx < questions.length) {
+            loadQuestion();
+        } else {
+            showResult();
+        }
+    }
 
+    function showResult() {
+        document.getElementById('question-container').style.display = "none";
+        const resScreen = document.getElementById('result-screen');
+        resScreen.style.display = "block";
+        document.getElementById('score-text').innerText = `Bạn đạt được: ${score} / ${questions.length} câu đúng`;
+    }
+
+    // Chạy khởi tạo
+    initQuiz();
 </script>
+
 </body>
 </html>
